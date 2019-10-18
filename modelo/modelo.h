@@ -4,6 +4,7 @@
 #include <GL/glut.h>
 #include <bib/CameraDistante.h>
 #include <bib/Desenha.h>
+#include <string>
 
 class Modelo
 {
@@ -49,6 +50,9 @@ public:
     bool getSelecionado() const;
     void setSelecionado(bool value);
 
+    std::string getNome() const;
+    void setNome(const std::string &value);
+
 private:
     float angulo_x = 0.0;
     float angulo_y = 0.0;
@@ -64,6 +68,8 @@ private:
 
     bool mostraEixos = false;
     bool selecionado = false;
+
+    std::string nome;
 };
 
 #endif // MODELO_H

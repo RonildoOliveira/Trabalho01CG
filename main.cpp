@@ -19,19 +19,8 @@ float trans_obj = false;
 bool desenhaEixo = true;
 
 float desl = 0.0; //0.001;
-float tx = 0.0;
-float ty = 0.0;
-float tz = 0.0;
-
-float ax = 0.0;
-float ay = 0.0;
-float az = 0.0;
 
 float delta = 5.0;
-
-float sx = 1.0;
-float sy = 1.0;
-float sz = 1.0;
 
 //ponto em coords locais, a ser calculado em coords de mundo
 float pl[4] = { 0.0, 0.0, 0.0, 1.0 };
@@ -59,6 +48,8 @@ int vp_manual_cam_w = 0;
 int vp_manual_cam_h = 0;
 
 /** -------------------------------------------------------- **/
+#include <fstream>
+
 #include "modelo/modelo.h"
 #include "modelo/casa.h"
 #include "modelo/cubo.h"
@@ -72,6 +63,75 @@ Bule * bule = new Bule();
 #include<vector>
 vector<Modelo*> listaModelos;
 int indice_obj_selecionado = 0;
+
+
+void salvaArquivo(){
+    ofstream myfile ("estado.txt");
+    if (myfile.is_open())
+    {
+        for (int index = 0; index < listaModelos.size(); ++index) {
+
+            myfile << listaModelos.at(index)->getNome() << " ";
+
+            myfile << listaModelos.at(index)->getTranslado_x() << " ";
+            myfile << listaModelos.at(index)->getTranslado_y() << " ";
+            myfile << listaModelos.at(index)->getTranslado_z() << " ";
+
+            myfile << listaModelos.at(index)->getAngulo_x() << " ";
+            myfile << listaModelos.at(index)->getAngulo_y() << " ";
+            myfile << listaModelos.at(index)->getAngulo_z() << " ";
+
+            myfile << listaModelos.at(index)->getEscala_x() << " ";
+            myfile << listaModelos.at(index)->getEscala_y() << " ";
+            myfile << listaModelos.at(index)->getEscala_z() << " ";
+
+            myfile << "\n";
+        }
+
+        myfile.close();
+    }
+    else{
+        cout << "Erro de leitura";
+    }
+}
+
+void carregaArquivo(){
+    std::ifstream file("estado.txt");
+        if (!file) {
+            cout << "Erro de leitura";
+        }
+
+        string nomeModelo;
+        float tx, ty, tz = 0;
+        float ax, ay, az = 0;
+        float sx, sy, sz = 0;
+
+        while(!file.eof()){
+
+            file >> nomeModelo;
+
+            if(nomeModelo == "bule"){
+                file >> tx >> ty >> tz;
+                file >> ax >> ay >> az;
+                file >> sx >> sy >> sz;
+
+                Bule * bule = new Bule();
+                bule->setAngulo_x(ax);
+                bule->setAngulo_y(ay);
+                bule->setAngulo_z(az);
+
+                bule->setEscala_x(sx);
+                bule->setEscala_y(sy);
+                bule->setEscala_z(sz);
+
+                bule->setTranslado_x(tx);
+                bule->setTranslado_x(ty);
+                bule->setTranslado_x(tz);
+
+                listaModelos.push_back(bule);
+            }
+        }
+}
 
 void mult_matriz_vetor(float res[4], float matriz[16], float entr[4]) {
     for (int i = 0; i < 4; i++) {
@@ -107,10 +167,14 @@ void imprime_coords_locais_globais()
         glPushMatrix();
             glLoadIdentity();
               //composicao de transformacoes
-              glTranslated(tx,ty,tz);
-              glRotated(az,0,0,1);
-              glRotated(ay,0,1,0);
-              glRotated(ax,1,0,0);
+              glTranslated(
+                          listaModelos.at(indice_obj_selecionado)->getTranslado_x(),
+                          listaModelos.at(indice_obj_selecionado)->getTranslado_y(),
+                          listaModelos.at(indice_obj_selecionado)->getTranslado_z()
+                          );
+              glRotated(listaModelos.at(indice_obj_selecionado)->getAngulo_z(),0,0,1);
+              glRotated(listaModelos.at(indice_obj_selecionado)->getAngulo_y(),0,1,0);
+              glRotated(listaModelos.at(indice_obj_selecionado)->getAngulo_x(),1,0,0);
             float mudanca_sist_coords[16];
             glGetFloatv(GL_MODELVIEW_MATRIX,mudanca_sist_coords);
             cout << "Matriz mudanca sist coords local=>global (T.Rz.Ry.Rx):\n";
@@ -218,7 +282,8 @@ void displayInner(bool manual_cam)
 {
     //tempo
     const double t = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
-    ax += desl;
+    listaModelos.at(indice_obj_selecionado)->
+            setAngulo_x(listaModelos.at(indice_obj_selecionado)->getAngulo_x() + desl);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -462,6 +527,21 @@ void key(unsigned char key, int x, int y)
             indice_obj_selecionado = indice_obj_selecionado % listaModelos.size();
             cout << indice_obj_selecionado << endl;
         break;
+        case 'p':
+            //anterior indice do objeto selecionado
+            indice_obj_selecionado --;
+            indice_obj_selecionado = indice_obj_selecionado % listaModelos.size();
+            cout << indice_obj_selecionado << endl;
+        break;
+        case 'd':
+            if(!listaModelos.empty()){
+                listaModelos.erase(listaModelos.begin()+indice_obj_selecionado);
+            }
+        break;
+        case 'o':
+            salvaArquivo();
+            cout << "salva arquivo" << endl;
+        break;
         case 'F':
             glutFullScreen();
             break;
@@ -633,11 +713,14 @@ void key(unsigned char key, int x, int y)
                 glMatrixMode(GL_MODELVIEW);
                 glPushMatrix();
                     glLoadIdentity();
-                      glTranslated(tx,ty,tz);
-                      glRotated(az,0,0,1);
-                      glRotated(ay,0,1,0);
-                      glRotated(ax,1,0,0);
-                      glScaled(sx,sy,sz);
+                    glTranslated(
+                                listaModelos.at(indice_obj_selecionado)->getTranslado_x(),
+                                listaModelos.at(indice_obj_selecionado)->getTranslado_y(),
+                                listaModelos.at(indice_obj_selecionado)->getTranslado_z()
+                                );
+                    glRotated(listaModelos.at(indice_obj_selecionado)->getAngulo_z(),0,0,1);
+                    glRotated(listaModelos.at(indice_obj_selecionado)->getAngulo_y(),0,1,0);
+                    glRotated(listaModelos.at(indice_obj_selecionado)->getAngulo_x(),1,0,0);
                     float transform[16];
                     glGetFloatv(GL_MODELVIEW_MATRIX,transform);
                     cout << "Matriz composicao de transformacoes (T.Rz.Ry.Rx.S):\n";
@@ -672,9 +755,17 @@ void idle(void)
 int main(int argc, char *argv[])
 {
     /** carregar modelos **/
+    /*
+    casa->setNome("casa");
+    cubo->setNome("cubo");
+    bule->setNome("bule");
+
     listaModelos.push_back(casa);
     listaModelos.push_back(cubo);
     listaModelos.push_back(bule);
+    */
+
+    carregaArquivo();
 
     //chamadas de inicializacao da GLUT
     glutInit(&argc, argv);

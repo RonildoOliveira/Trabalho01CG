@@ -114,3 +114,13 @@ void Modelo::setSelecionado(bool value)
 {
     selecionado = value;
 }
+
+std::string Modelo::getNome() const
+{
+    return nome;
+}
+
+void Modelo::setNome(const std::string &value)
+{
+    nome = value;
+}

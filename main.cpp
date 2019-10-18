@@ -66,7 +66,7 @@ int indice_obj_selecionado = 0;
 
 
 void salvaArquivo(){
-    ofstream myfile ("estado.txt");
+    ofstream myfile ("../Trabalho01CG/estado.txt");
     if (myfile.is_open())
     {
         for (int index = 0; index < listaModelos.size(); ++index) {
@@ -96,7 +96,7 @@ void salvaArquivo(){
 }
 
 void carregaArquivo(){
-    std::ifstream file("estado.txt");
+    std::ifstream file("../Trabalho01CG/estado.txt");
         if (!file) {
             cout << "Erro de leitura";
         }

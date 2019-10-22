@@ -133,6 +133,61 @@ void carregaArquivo(){
         }
 }
 
+void carregaCamera(){
+    std::ifstream file("../Trabalho01CG/camera.txt");
+    string nomeModelo;
+
+    GLfloat ex;
+    GLfloat ey;
+    GLfloat ez;
+    GLfloat cx;
+    GLfloat cy;
+    GLfloat cz;
+    GLfloat ux;
+    GLfloat uy;
+    GLfloat uz;
+
+    if (!file) {
+        cout << "Erro de leitura";
+    }
+
+    while(!file.eof()){
+
+        file >> nomeModelo;
+        file >> ex >> ey >> ez;
+        file >> cx >> cy >> cz;
+        file >> ux >> uy >> uz;
+
+        cam = new CameraDistante(ex,ey,ez, cx,cy,cz, ux,uy,uz);
+    }
+}
+
+void salvaCamera(){
+    ofstream myfile ("../Trabalho01CG/camera.txt");
+
+    myfile << "CameraDistante";
+
+    if (myfile.is_open())
+    {
+        //ecu
+        myfile << " " << cam->e.x;
+        myfile << " " << cam->e.y;
+        myfile << " " << cam->e.z;
+
+        myfile << " " << cam->c.x;
+        myfile << " " << cam->c.y;
+        myfile << " " << cam->c.z;
+
+        myfile << " " << cam->u.x;
+        myfile << " " << cam->u.y;
+        myfile << " " << cam->u.z;
+
+        myfile.close();
+    }
+
+    else cout << "Erro de leitura";
+}
+
 void mult_matriz_vetor(float res[4], float matriz[16], float entr[4]) {
     for (int i = 0; i < 4; i++) {
         res[i] = 0.0;
@@ -663,7 +718,7 @@ void key(unsigned char key, int x, int y)
         case 'C':
             static int pos_manual_cam = 0;
             pos_manual_cam++;
-            if (pos_manual_cam%4==0) {
+            if (pos_manual_cam % 4 == 0) {
                 cout << "Mostrando camera 1/Alterando camera 1:\n";
                 change_manual_cam = false;
                 manual_cam = false;
@@ -697,6 +752,8 @@ void key(unsigned char key, int x, int y)
 
         case 's':
             //save current camera location
+            salvaCamera();
+            /*
             savedCamera[0] = cam->e.x;
             savedCamera[1] = cam->e.y;
             savedCamera[2] = cam->e.z;
@@ -706,6 +763,7 @@ void key(unsigned char key, int x, int y)
             savedCamera[6] = cam->u.x;
             savedCamera[7] = cam->u.y;
             savedCamera[8] = cam->u.z;
+            */
             break;
 
         case 'm':
@@ -755,17 +813,10 @@ void idle(void)
 int main(int argc, char *argv[])
 {
     /** carregar modelos **/
-    /*
-    casa->setNome("casa");
-    cubo->setNome("cubo");
-    bule->setNome("bule");
-
-    listaModelos.push_back(casa);
-    listaModelos.push_back(cubo);
-    listaModelos.push_back(bule);
-    */
-
     carregaArquivo();
+
+    /** carregar camera **/
+    carregaCamera();
 
     //chamadas de inicializacao da GLUT
     glutInit(&argc, argv);

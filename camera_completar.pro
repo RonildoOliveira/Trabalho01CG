@@ -20,7 +20,8 @@ HEADERS += \
     modelo/bule.h \
     modelo/casa.h \
     modelo/cubo.h \
-    modelo/modelo.h
+    modelo/modelo.h \
+    modelo/objmodelloader.h
 
 SOURCES += \
     bib/Camera.cpp \
@@ -32,5 +33,6 @@ SOURCES += \
     modelo/bule.cpp \
     modelo/casa.cpp \
     modelo/cubo.cpp \
-    modelo/modelo.cpp
+    modelo/modelo.cpp \
+    modelo/objmodelloader.cpp
 

@@ -54,6 +54,7 @@ int vp_manual_cam_h = 0;
 #include "modelo/casa.h"
 #include "modelo/cubo.h"
 #include "modelo/bule.h"
+#include "modelo/objmodelloader.h"
 
 /* Modelos */
 Casa * casa = new Casa();
@@ -817,6 +818,11 @@ int main(int argc, char *argv[])
 
     /** carregar camera **/
     carregaCamera();
+
+    /** obj **/
+    ObjModelLoader * batmovel = new ObjModelLoader("../Trabalho01CG/modelos_3d/batmobile.obj", "batmovel");
+    listaModelos.push_back(batmovel);
+    //batmobile.obj
 
     //chamadas de inicializacao da GLUT
     glutInit(&argc, argv);

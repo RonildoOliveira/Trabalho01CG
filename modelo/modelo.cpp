@@ -1,9 +1,6 @@
 #include "modelo.h"
 
-Modelo::Modelo()
-{
-
-}
+Modelo::Modelo(){}
 
 float Modelo::getAngulo_x() const
 {

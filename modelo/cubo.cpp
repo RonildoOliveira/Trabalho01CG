@@ -2,7 +2,7 @@
 
 Cubo::Cubo()
 {
-
+    setNome("cubo");
 }
 
 void Cubo::desenhar()

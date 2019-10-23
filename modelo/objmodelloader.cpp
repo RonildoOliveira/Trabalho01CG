@@ -10,7 +10,7 @@ ObjModelLoader::ObjModelLoader()
 ObjModelLoader::ObjModelLoader(string filename, string nome)
 {
     this->filename = filename;
-    this->nome = nome;
+    setNome(nome);
 
     fstream *objFile = new fstream;
     objFile->open(filename, ios_base::in);

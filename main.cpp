@@ -70,25 +70,29 @@ void salvaArquivo(){
     ofstream myfile ("../Trabalho01CG/estado.txt");
     if (myfile.is_open())
     {
-        for (int index = 0; index < listaModelos.size(); ++index) {
-
-            myfile << listaModelos.at(index)->getNome() << " ";
-
-            myfile << listaModelos.at(index)->getTranslado_x() << " ";
-            myfile << listaModelos.at(index)->getTranslado_y() << " ";
-            myfile << listaModelos.at(index)->getTranslado_z() << " ";
-
-            myfile << listaModelos.at(index)->getAngulo_x() << " ";
-            myfile << listaModelos.at(index)->getAngulo_y() << " ";
-            myfile << listaModelos.at(index)->getAngulo_z() << " ";
-
-            myfile << listaModelos.at(index)->getEscala_x() << " ";
-            myfile << listaModelos.at(index)->getEscala_y() << " ";
-            myfile << listaModelos.at(index)->getEscala_z() << " ";
-
-            myfile << "\n";
+        if(listaModelos.empty()){
+            cout << "lista vazia" << endl;
         }
+        else{
+            for (int index = 0; index < listaModelos.size(); ++index) {
 
+                myfile << listaModelos.at(index)->getNome() << " ";
+
+                myfile << listaModelos.at(index)->getTranslado_x() << " ";
+                myfile << listaModelos.at(index)->getTranslado_y() << " ";
+                myfile << listaModelos.at(index)->getTranslado_z() << " ";
+
+                myfile << listaModelos.at(index)->getAngulo_x() << " ";
+                myfile << listaModelos.at(index)->getAngulo_y() << " ";
+                myfile << listaModelos.at(index)->getAngulo_z() << " ";
+
+                myfile << listaModelos.at(index)->getEscala_x() << " ";
+                myfile << listaModelos.at(index)->getEscala_y() << " ";
+                myfile << listaModelos.at(index)->getEscala_z() << " ";
+
+                myfile << "\n";
+            }
+        }
         myfile.close();
     }
     else{
@@ -132,7 +136,7 @@ void carregaArquivo(){
                 listaModelos.push_back(bule);
             }
 
-            if(nomeModelo == "batmovel") {
+            else if(nomeModelo == "batmovel") {
                 file >> tx >> ty >> tz;
                 file >> ax >> ay >> az;
                 file >> sx >> sy >> sz;
@@ -152,6 +156,48 @@ void carregaArquivo(){
                 batmovel->setTranslado_z(tz);
 
                 listaModelos.push_back(batmovel);
+            }
+            else if(nomeModelo == "cubo") {
+                file >> tx >> ty >> tz;
+                file >> ax >> ay >> az;
+                file >> sx >> sy >> sz;
+
+                Cubo * cubo = new Cubo();
+
+                cubo->setAngulo_x(ax);
+                cubo->setAngulo_y(ay);
+                cubo->setAngulo_z(az);
+
+                cubo->setEscala_x(sx);
+                cubo->setEscala_y(sy);
+                cubo->setEscala_z(sz);
+
+                cubo->setTranslado_x(tx);
+                cubo->setTranslado_y(ty);
+                cubo->setTranslado_z(tz);
+
+                listaModelos.push_back(cubo);
+            }
+            else if(nomeModelo == "casa") {
+                file >> tx >> ty >> tz;
+                file >> ax >> ay >> az;
+                file >> sx >> sy >> sz;
+
+                Casa * casa = new Casa();
+
+                casa->setAngulo_x(ax);
+                casa->setAngulo_y(ay);
+                casa->setAngulo_z(az);
+
+                casa->setEscala_x(sx);
+                casa->setEscala_y(sy);
+                casa->setEscala_z(sz);
+
+                casa->setTranslado_x(tx);
+                casa->setTranslado_y(ty);
+                casa->setTranslado_z(tz);
+
+                listaModelos.push_back(casa);
             }
         }
 }
@@ -776,17 +822,6 @@ void key(unsigned char key, int x, int y)
         case 's':
             //save current camera location
             salvaCamera();
-            /*
-            savedCamera[0] = cam->e.x;
-            savedCamera[1] = cam->e.y;
-            savedCamera[2] = cam->e.z;
-            savedCamera[3] = cam->c.x;
-            savedCamera[4] = cam->c.y;
-            savedCamera[5] = cam->c.z;
-            savedCamera[6] = cam->u.x;
-            savedCamera[7] = cam->u.y;
-            savedCamera[8] = cam->u.z;
-            */
             break;
 
         case 'm':
@@ -821,6 +856,15 @@ void key(unsigned char key, int x, int y)
                 glPopMatrix();
             }
             break;
+        case '1':
+            listaModelos.push_back(new Bule());
+        break;
+        case '2':
+            listaModelos.push_back(new Cubo());
+        break;
+        case '3':
+            listaModelos.push_back(new Casa());
+        break;
     }
 
     glutPostRedisplay();

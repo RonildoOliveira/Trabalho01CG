@@ -2,7 +2,7 @@
 
 Casa::Casa()
 {
-
+    setNome("casa");
 }
 
 void Casa::desenhar(){

@@ -2,7 +2,7 @@
 
 Bule::Bule()
 {
-
+    setNome("bule");
 }
 
 void Bule::desenhar()

@@ -19,7 +19,7 @@ public:
 
     ~ObjModelLoader();
 private:
-    std::string nome = "";
+    //std::string nome = "";
     std::string filename = "";
     std::vector<std::vector<float>*> *vertices = new std::vector<std::vector<float>*>;
     std::vector<std::vector<int>*>   *faces    = new std::vector<std::vector<int>*>;

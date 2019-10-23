@@ -57,9 +57,9 @@ int vp_manual_cam_h = 0;
 #include "modelo/objmodelloader.h"
 
 /* Modelos */
-Casa * casa = new Casa();
-Cubo * cubo = new Cubo();
-Bule * bule = new Bule();
+//Casa * casa = new Casa();
+//Cubo * cubo = new Cubo();
+//Bule * bule = new Bule();
 
 #include<vector>
 vector<Modelo*> listaModelos;
@@ -130,6 +130,28 @@ void carregaArquivo(){
                 bule->setTranslado_x(tz);
 
                 listaModelos.push_back(bule);
+            }
+
+            if(nomeModelo == "batmovel") {
+                file >> tx >> ty >> tz;
+                file >> ax >> ay >> az;
+                file >> sx >> sy >> sz;
+
+                ObjModelLoader * batmovel = new ObjModelLoader("../Trabalho01CG/modelos_3d/batmobile.obj", "batmovel");
+
+                batmovel->setAngulo_x(ax);
+                batmovel->setAngulo_y(ay);
+                batmovel->setAngulo_z(az);
+
+                batmovel->setEscala_x(sx);
+                batmovel->setEscala_y(sy);
+                batmovel->setEscala_z(sz);
+
+                batmovel->setTranslado_x(tx);
+                batmovel->setTranslado_y(ty);
+                batmovel->setTranslado_z(tz);
+
+                listaModelos.push_back(batmovel);
             }
         }
 }
@@ -591,7 +613,7 @@ void key(unsigned char key, int x, int y)
         break;
         case 'd':
             if(!listaModelos.empty()){
-                listaModelos.erase(listaModelos.begin()+indice_obj_selecionado);
+                listaModelos.erase(listaModelos.begin()+(indice_obj_selecionado));
             }
         break;
         case 'o':
@@ -820,8 +842,6 @@ int main(int argc, char *argv[])
     carregaCamera();
 
     /** obj **/
-    ObjModelLoader * batmovel = new ObjModelLoader("../Trabalho01CG/modelos_3d/batmobile.obj", "batmovel");
-    listaModelos.push_back(batmovel);
     //batmobile.obj
 
     //chamadas de inicializacao da GLUT

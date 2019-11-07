@@ -34,12 +34,12 @@ void GUI::GLUTInit()
 
 void GUI::GLInit()
 {
-    glClearColor(0.3,0.3,0.3,1.0);
+    glClearColor(0.6,0.6,0.0,1.0); //define a cor para limpar a imagem (cor de fundo)
 
-    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHTING); //habilita iluminacao (chamada no setLight)
     //glEnable(GL_COLOR_MATERIAL);
-    glEnable(GL_CULL_FACE);
-    //glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE); //nao mostra as faces dos dois "lados" (frente [anti-horaria] e tras [horaria])
+    //glCullFace(GL_BACK); //define qual "lado" da face nao sera mostrado (padrao = nao mostrar a de tras)
     glEnable(GL_NORMALIZE); //mantem a qualidade da iluminacao mesmo quando glScalef eh usada
 
     glShadeModel(GL_SMOOTH);
@@ -86,14 +86,36 @@ void GUI::setKey(keyFunction kFunction) {
 
 void GUI::displayInit()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //limpa a imagem com a cor de fundo
 
     const float ar = glutGUI::height>0 ? (float) glutGUI::width / (float) glutGUI::height : 1.0;
+    const float w = glutGUI::width;
+    const float h = glutGUI::height;
+    const float orthof = 0.003; //orthoFactor
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(30.,ar,0.1,1000.);
 
+    if (glutGUI::perspective){
+        gluPerspective(30.,ar,0.1,1000.);}
+
+    else if(glutGUI::ortho){
+        glOrtho(-orthof*w,orthof*w,-orthof*h,orthof*h,0.0,100.0);
+    }
+    else if(glutGUI::obliq){
+        float alfa = 45*(PI/180);
+        float phi = 45*(PI/180);
+
+        float Shtotal[16] = {
+            1,   0.0, 1.0/tan(alfa),  0.0,
+            0.0, 1.0, 1.0/tan(phi),   0.0,
+            0.0, 0.0, 1,              0.0,
+            0.0, 0.0, 0.0,            1.0
+        };
+
+        glMultTransposeMatrixf(Shtotal);
+         glOrtho(-orthof*w,orthof*w,-orthof*h,orthof*h,0.0,100.0);
+    }
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
@@ -112,89 +134,7 @@ void GUI::displayEnd()
 
 void GUI::keyInit(unsigned char key, int x, int y)
 {
-    switch (key)
-    {
-    case 27 :
-    case 13 :
-    case 'q':
-        exit(0);
-        break;
-
-    case 'F':
-        glutFullScreen();
-        break;
-    case 'f':
-        glutReshapeWindow(800,600);
-        break;
-
-    case 'l':
-        glutGUI::enabled_light[7] = !glutGUI::enabled_light[7];
-        break;
-    case '0'...'7':
-        glutGUI::enabled_light[key-'0'] = !glutGUI::enabled_light[key-'0'];
-        break;
-
-    case 'c':
-        glutGUI::posCam = 1;
-        delete glutGUI::cam;
-        glutGUI::cam = new CameraDistante(); //CameraDistante(0,1,5, 0,1,0, 0,1,0);
-        break;
-    case 'C':
-        glutGUI::posCam = (glutGUI::posCam+1)%6;
-        delete glutGUI::cam;
-        switch (glutGUI::posCam) {
-        case 0:
-            glutGUI::cam = new CameraDistante(glutGUI::savedCamera[0],glutGUI::savedCamera[1],glutGUI::savedCamera[2],glutGUI::savedCamera[3],glutGUI::savedCamera[4],glutGUI::savedCamera[5],glutGUI::savedCamera[6],glutGUI::savedCamera[7],glutGUI::savedCamera[8]);
-            break;
-        case 1:
-            glutGUI::cam = new CameraDistante(); //CameraDistante(0,1,5, 0,1,0, 0,1,0);
-            break;
-        case 2:
-            glutGUI::cam = new CameraDistante(5,1,0, 0,1,0, 0,1,0);
-            break;
-        case 3:
-            glutGUI::cam = new CameraDistante(0,1,-5, 0,1,0, 0,1,0);
-            break;
-        case 4:
-            glutGUI::cam = new CameraDistante(-5,1,0, 0,1,0, 0,1,0);
-            break;
-        case 5:
-            glutGUI::cam = new CameraDistante(0,6,0, 0,1,0, 0,0,-1);
-            break;
-        }
-        break;
-    case 's':
-        //save current camera location
-        glutGUI::savedCamera[0] = glutGUI::cam->e.x;
-        glutGUI::savedCamera[1] = glutGUI::cam->e.y;
-        glutGUI::savedCamera[2] = glutGUI::cam->e.z;
-        glutGUI::savedCamera[3] = glutGUI::cam->c.x;
-        glutGUI::savedCamera[4] = glutGUI::cam->c.y;
-        glutGUI::savedCamera[5] = glutGUI::cam->c.z;
-        glutGUI::savedCamera[6] = glutGUI::cam->u.x;
-        glutGUI::savedCamera[7] = glutGUI::cam->u.y;
-        glutGUI::savedCamera[8] = glutGUI::cam->u.z;
-        break;
-
-    case 'X':
-        glutGUI::autoCamMove(-90,AXIS_X,glutGUI::nIterations);
-        break;
-    case 'x':
-        glutGUI::autoCamMove( 90,AXIS_X,glutGUI::nIterations);
-        break;
-    case 'Y':
-        glutGUI::autoCamMove( 90,AXIS_Y,glutGUI::nIterations);
-        break;
-    case 'y':
-        glutGUI::autoCamMove(-90,AXIS_Y,glutGUI::nIterations);
-        break;
-    case 'Z':
-        glutGUI::autoCamMove(  2,AXIS_Z,glutGUI::nIterations);
-        break;
-    case 'z':
-        glutGUI::autoCamMove( -2,AXIS_Z,glutGUI::nIterations);
-        break;
-    }
+    glutGUI::defaultKey(key,x,y);
 }
 
 void GUI::setLight(int id, float posx, float posy, float posz, bool onOffKeyDefault, bool attenuated, bool low, bool hidden, bool pontual, bool spot, bool onOffUserControl) {
@@ -218,7 +158,7 @@ void GUI::setLight(int id, float posx, float posy, float posz, bool onOffKeyDefa
     glLightfv(GL_LIGHT0+id, GL_DIFFUSE,  light_diffuse);
     glLightfv(GL_LIGHT0+id, GL_SPECULAR, light_specular);
     //posicionando a luz
-    GLfloat light_position[] = { posx + glutGUI::lx, posy + glutGUI::ly, posz + glutGUI::lz, 1.0f };
+    GLfloat light_position[] = { posx + glutGUI::lx, posy + glutGUI::ly, posz + glutGUI::lz, 1.0f }; //4o parametro: 0.0 - luz no infinito, 1.0 - luz pontual
         if (!glutGUI::pontual_light[id]) light_position[3] = 0.0f;
     glLightfv(GL_LIGHT0+id, GL_POSITION, light_position);
     //desenha uma esfera representando a luz
@@ -227,7 +167,7 @@ void GUI::setLight(int id, float posx, float posy, float posz, bool onOffKeyDefa
         glColor4f(1.0,1.0,1.0,1.0);
         glPushMatrix();
             glTranslatef(light_position[0],light_position[1],light_position[2]);
-            glutSolidSphere(0.02,glutGUI::slices,glutGUI::stacks);
+            glutSolidSphere(0.05,glutGUI::slices,glutGUI::stacks);
         glPopMatrix();
         glEnable(GL_LIGHTING);
     }
@@ -274,6 +214,172 @@ void GUI::setColor(float r, float g, float b, float a, bool specular) {
     glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
 }
 
+void GUI::glShearXf(float shY, float shZ)
+{
+    double transform[16] = {
+                            1.0,    shY,    shZ,    0.0,
+                            0.0,    1.0,    0.0,    0.0,
+                            0.0,    0.0,    1.0,    0.0,
+                            0.0,    0.0,    0.0,    1.0
+                         };
+    glMultTransposeMatrixd( transform );
+}
+
+void GUI::glShearYf(float shX, float shZ)
+{
+    double transform[16] = {
+                            1.0,    0.0,    0.0,    0.0,
+                            shX,    1.0,    shZ,    0.0,
+                            0.0,    0.0,    1.0,    0.0,
+                            0.0,    0.0,    0.0,    1.0
+                         };
+    glMultTransposeMatrixd( transform );
+}
+
+void GUI::glShearZf(float shX, float shY)
+{
+    double transform[16] = {
+                            1.0,    0.0,    0.0,    0.0,
+                            0.0,    1.0,    0.0,    0.0,
+                            shX,    shY,    1.0,    0.0,
+                            0.0,    0.0,    0.0,    1.0
+                         };
+    glMultTransposeMatrixd( transform );
+}
+
+void GUI::glShearXYf(float shX, float shY)
+{
+    double transform[16] = {
+                            1.0,    0.0,    shX,    0.0,
+                            0.0,    1.0,    shY,    0.0,
+                            0.0,    0.0,    1.0,    0.0,
+                            0.0,    0.0,    0.0,    1.0
+                         };
+    glMultTransposeMatrixd( transform );
+}
+
+void GUI::glShearXZf(float shX, float shZ)
+{
+    double transform[16] = {
+                            1.0,    shX,    0.0,    0.0,
+                            0.0,    1.0,    0.0,    0.0,
+                            0.0,    shZ,    1.0,    0.0,
+                            0.0,    0.0,    0.0,    1.0
+                         };
+    glMultTransposeMatrixd( transform );
+}
+
+void GUI::glShearYZf(float shY, float shZ)
+{
+    double transform[16] = {
+                            1.0,    0.0,    0.0,    0.0,
+                            shY,    1.0,    0.0,    0.0,
+                            shZ,    0.0,    1.0,    0.0,
+                            0.0,    0.0,    0.0,    1.0
+                         };
+    glMultTransposeMatrixd( transform );
+}
+
+void GUI::glReflectPlaneYZf()
+{
+    double transform[16] = {
+                           -1.0,    0.0,    0.0,    0.0,
+                            0.0,    1.0,    0.0,    0.0,
+                            0.0,    0.0,    1.0,    0.0,
+                            0.0,    0.0,    0.0,    1.0
+                         };
+    glMultTransposeMatrixd( transform );
+}
+
+void GUI::glReflectPlaneXZf()
+{
+    double transform[16] = {
+                            1.0,    0.0,    0.0,    0.0,
+                            0.0,   -1.0,    0.0,    0.0,
+                            0.0,    0.0,    1.0,    0.0,
+                            0.0,    0.0,    0.0,    1.0
+                         };
+    glMultTransposeMatrixd( transform );
+}
+
+void GUI::glReflectPlaneXYf()
+{
+    double transform[16] = {
+                            1.0,    0.0,    0.0,    0.0,
+                            0.0,    1.0,    0.0,    0.0,
+                            0.0,    0.0,   -1.0,    0.0,
+                            0.0,    0.0,    0.0,    1.0
+                         };
+    glMultTransposeMatrixd( transform );
+}
+//-------------------sombra-------------------
+//Create a matrix that will project the desired shadow
+//plano alinhado aos eixos principais
+void GUI::shadowMatrixYk(GLfloat shadowMat[4][4], GLfloat lightpos[4], GLfloat k)
+{
+    enum {X,Y,Z,W};
+
+    shadowMat[0][0] =  k*lightpos[W] - lightpos[Y];
+    shadowMat[0][1] =  lightpos[X];
+    shadowMat[0][2] =  0.0;
+    shadowMat[0][3] = -k*lightpos[X];
+
+    shadowMat[1][0] =  0.0;
+    shadowMat[1][1] =  k*lightpos[W];
+    shadowMat[1][2] =  0.0;
+    shadowMat[1][3] = -k*lightpos[Y];
+
+    shadowMat[2][0] =  0.0;
+    shadowMat[2][1] =  lightpos[Z];
+    shadowMat[2][2] =  k*lightpos[W] - lightpos[Y];
+    shadowMat[2][3] = -k*lightpos[Z];
+
+    shadowMat[3][0] =  0.0;
+    shadowMat[3][1] =  lightpos[W];
+    shadowMat[3][2] =  0.0;
+    shadowMat[3][3] = -lightpos[Y];
+
+    for (int i=0;i<4;i++)
+        for (int j=0;j<4;j++)
+            shadowMat[i][j] *= -1;
+}
+
+//Create a matrix that will project the desired shadow
+//plano arbitrario
+void GUI::shadowMatrix(GLfloat shadowMat[4][4], GLfloat groundplane[4], GLfloat lightpos[4])
+{
+    enum {X,Y,Z,W};
+    GLfloat dot;
+
+    /* Find dot product between light position vector and ground plane normal. */
+    dot = groundplane[X] * lightpos[X] +
+    groundplane[Y] * lightpos[Y] +
+    groundplane[Z] * lightpos[Z] +
+    groundplane[W] * lightpos[W];
+
+    shadowMat[0][0] = dot - lightpos[X] * groundplane[X];
+    shadowMat[0][1] = 0.f - lightpos[X] * groundplane[Y];
+    shadowMat[0][2] = 0.f - lightpos[X] * groundplane[Z];
+    shadowMat[0][3] = 0.f - lightpos[X] * groundplane[W];
+
+    shadowMat[1][0] = 0.f - lightpos[Y] * groundplane[X];
+    shadowMat[1][1] = dot - lightpos[Y] * groundplane[Y];
+    shadowMat[1][2] = 0.f - lightpos[Y] * groundplane[Z];
+    shadowMat[1][3] = 0.f - lightpos[Y] * groundplane[W];
+
+    shadowMat[2][0] = 0.f - lightpos[Z] * groundplane[X];
+    shadowMat[2][1] = 0.f - lightpos[Z] * groundplane[Y];
+    shadowMat[2][2] = dot - lightpos[Z] * groundplane[Z];
+    shadowMat[2][3] = 0.f - lightpos[Z] * groundplane[W];
+
+    shadowMat[3][0] = 0.f - lightpos[W] * groundplane[X];
+    shadowMat[3][1] = 0.f - lightpos[W] * groundplane[Y];
+    shadowMat[3][2] = 0.f - lightpos[W] * groundplane[Z];
+    shadowMat[3][3] = dot - lightpos[W] * groundplane[W];
+}
+//-------------------sombra-------------------
+
+
 void GUI::drawSphere(float x, float y, float z, float radius)
 {
     GLUquadric* quad = gluNewQuadric();
@@ -306,10 +412,10 @@ void GUI::drawQuad(float width, float height, float discrWidth, float discrHeigh
                 glTranslatef(i*discrWidth,0.0,j*discrHeight);
                 glBegin( GL_QUADS );
                     glNormal3f(0.,1.,0.);
-                        glTexCoord2f(     i*discrTexWidth,     j*discrTexHeight); glVertex3f(        0.0,0.0,+discrHeight);
-                        glTexCoord2f( (i+1)*discrTexWidth,     j*discrTexHeight); glVertex3f(+discrWidth,0.0,+discrHeight);
-                        glTexCoord2f( (i+1)*discrTexWidth, (j+1)*discrTexHeight); glVertex3f(+discrWidth,0.0,         0.0);
-                        glTexCoord2f(     i*discrTexWidth, (j+1)*discrTexHeight); glVertex3f(        0.0,0.0,         0.0);
+                        glTexCoord2f(     i*discrTexWidth, (j+1)*discrTexHeight); glVertex3f(        0.0,0.0,+discrHeight);
+                        glTexCoord2f( (i+1)*discrTexWidth, (j+1)*discrTexHeight); glVertex3f(+discrWidth,0.0,+discrHeight);
+                        glTexCoord2f( (i+1)*discrTexWidth,     j*discrTexHeight); glVertex3f(+discrWidth,0.0,         0.0);
+                        glTexCoord2f(     i*discrTexWidth,     j*discrTexHeight); glVertex3f(        0.0,0.0,         0.0);
                 glEnd();
             glPopMatrix();
         }
@@ -479,7 +585,17 @@ void GUI::drawBox(float xmin, float ymin, float zmin, float xmax, float ymax, fl
     }
 }
 
-//desenha eixos do sistema de coordenadas global
+void GUI::drawScaledBox(float scale, float xmin, float ymin, float zmin, float xmax, float ymax, float zmax, bool inverted)
+{
+    glPushMatrix();
+        glTranslatef((xmin+xmax)/2.0,(ymin+ymax)/2.0,(zmin+zmax)/2.0);
+        glScalef(scale,scale,scale);
+        glTranslatef(-(xmin+xmax)/2.0,-(ymin+ymax)/2.0,-(zmin+zmax)/2.0);
+        GUI::drawBox(xmin, ymin, zmin, xmax, ymax, zmax, inverted);
+    glPopMatrix();
+}
+
+//desenha eixos do sistema de coordenadas atual (global, caso nao esteja influenciado por transformacoes)
 void GUI::drawOrigin(float tamanho)
 {
     glPushMatrix();
@@ -487,9 +603,42 @@ void GUI::drawOrigin(float tamanho)
     glPopMatrix();
 }
 
+void GUI::drawCamera(float tamanho) {
+    GLUquadricObj *quad = gluNewQuadric();
+
+    glPushMatrix();
+        Desenha::drawBox(-tamanho,-tamanho,-tamanho,tamanho,tamanho,tamanho);
+        glTranslatef(0,0,-2*tamanho);
+        Desenha::gluClosedCylinder(quad,tamanho,tamanho/2,tamanho,glutGUI::slices,glutGUI::stacks);
+    glPopMatrix();
+
+    gluDeleteQuadric( quad );
+}
+
+void GUI::draw3ds(Model3DS &model3DS, float tx, float ty, float tz,
+                                      float ax, float ay, float az,
+                                      float sx, float sy, float sz)
+{
+    glPushMatrix();
+        //transformacoes do objeto ja desenhado de acordo com o seu sistema local
+        glTranslatef(tx,ty,tz);
+        glRotatef(ax,1,0,0);
+        glRotatef(ay,0,1,0);
+        glRotatef(az,0,0,1);
+        glScalef(sx,sy,sz);
+        //sist local
+        //drawOrigin(0.5);
+        //trazendo para a origem, alinhando com os eixos locais e ajustando para um tamanho adequado (Sl.Rl.Tl)
+        float s = 0.0005;
+        glScalef(s,s,s);
+        glRotatef(-90,1,0,0);
+        model3DS.draw();
+    glPopMatrix();
+}
+
 void GUI::drawFloor(float width, float height, float discrWidth, float discrHeight, float texWidth, float texHeight)
 {
-    glDisable(GL_CULL_FACE);
+    //glDisable(GL_CULL_FACE);
 
     //int discr = 1;
     //Desenha::drawGrid( width/discr, 0, height/discr, discr );
@@ -499,5 +648,5 @@ void GUI::drawFloor(float width, float height, float discrWidth, float discrHeig
         drawQuad(width,height,discrWidth,discrHeight,texWidth,texHeight);
     glPopMatrix();
 
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
 }

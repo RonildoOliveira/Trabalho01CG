@@ -43,7 +43,7 @@ void CameraJogo::translatey(GLfloat win_y, GLfloat last_y){
 }
 //---------------------------------------------------------------------------
 void CameraJogo::rotatex(GLfloat win_y, GLfloat last_y){
-  c = c.soma( u.multiplicacao( (last_y - win_y)/100.0 ) );
+  c = c.soma( u.multiplicacao( (last_y - win_y)/500.0 ) );
 
   //Vec normalizado
   Vetor3D N = c.subtracao(e);
@@ -62,12 +62,29 @@ void CameraJogo::rotatey(GLfloat win_x, GLfloat last_x){
   //vetor no sentido positivo da direcao x
   Vetor3D Xpos = Vec.prodVetorial(u);
 
-  c = c.subtracao( Xpos.multiplicacao( (last_x - win_x)/100.0 ) );
+  c = c.subtracao( Xpos.multiplicacao( (last_x - win_x)/500.0 ) );
 
   //Vec normalizado
   Vetor3D N = c.subtracao(e);
   N.normaliza();
   c = e.soma(N);
+
+  //novo-----------------------------------
+  //atualizacao de u correspondente a nao deixar rotacionar em torno de z_
+  Vetor3D up;
+  if (u.y>=0.0) {
+    up = Vetor3D(0.0,1.0,0.0);
+  } else {
+    up = Vetor3D(0.0,-1.0,0.0);
+  }
+  //mantendo u perpendicular a x_ e z_ (u = y_)
+  //vetor do centro(center) ao olho(eye)
+  Vetor3D Vce = e - c; // z_
+  //x local atualizado
+  Vetor3D x_ = up ^ Vce; //x_ (neste caso, nao precisa usar x_ unitario)
+  u = Vce ^ x_;
+  !u; //normaliza (torna unitario)
+  //fim_novo-------------------------------
 }
 //---------------------------------------------------------------------------
 void CameraJogo::rotatez(GLfloat win_x, GLfloat last_x){

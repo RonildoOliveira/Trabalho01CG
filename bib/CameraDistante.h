@@ -17,13 +17,13 @@ class CameraDistante : public Camera
       ~CameraDistante(){};
 
       //vetor Vec e u sempre perpendiculares e u sempre unitario
-      virtual void zoom(GLfloat new_y, GLfloat last_y);
-      virtual void translatex(GLfloat new_x, GLfloat last_x);
-      virtual void translatey(GLfloat new_y, GLfloat last_y);
-      virtual void rotatex(GLfloat new_y, GLfloat last_y);
-      virtual void rotatey(GLfloat new_x, GLfloat last_x);
-      virtual void rotatez(GLfloat new_x, GLfloat last_x);
-      virtual Vetor3D getPickedPoint(GLfloat x, GLfloat y);
+      virtual void zoom(GLfloat, GLfloat);
+      virtual void translatex(GLfloat, GLfloat);
+      virtual void translatey(GLfloat, GLfloat);
+      virtual void rotatex(GLfloat, GLfloat);
+      virtual void rotatey(GLfloat, GLfloat);
+      virtual void rotatez(GLfloat, GLfloat);
+      virtual Vetor3D getPickedPoint(GLfloat, GLfloat);
 
 };
 

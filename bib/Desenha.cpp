@@ -84,6 +84,8 @@ void Desenha::drawWireBox(GLfloat xmin, GLfloat ymin, GLfloat zmin, GLfloat xmax
 }
 //---------------------------------------------------------------------------
 // Draws a simple box using the given corners
+//drawSelectedBox nao define normais
+//cor deve ser definida desligando a iluminacao e usando glColor
 void Desenha::drawSelectedBox(GLfloat xmin, GLfloat ymin, GLfloat zmin, GLfloat xmax, GLfloat ymax, GLfloat zmax) {
   float dx = (xmax - xmin)/8.0;
   float dy = (ymax - ymin)/8.0;
@@ -177,7 +179,7 @@ void Desenha::drawGrid(int meionx, GLfloat y, int meionz, int dimensao) {
 // desenha um cilindro fechado
 void Desenha::gluClosedCylinder(GLUquadric* quad, GLdouble base, GLdouble top, GLdouble height, GLint slices, GLint stacks) {
 	gluQuadricNormals(quad, GLU_SMOOTH);			// Create Smooth Normals
-	gluQuadricTexture(quad, GL_TRUE);		  		// Create Texture Coords
+    gluQuadricTexture(quad, GL_TRUE);		  		// Create Texture Coords
   glPushMatrix();
     gluCylinder(quad, base, top, height, slices, stacks);
     glTranslated(0,0,height);
@@ -191,7 +193,7 @@ void Desenha::gluClosedCylinder(GLUquadric* quad, GLdouble base, GLdouble top, G
 // desenha uma capsula (cilindro + 2 esferas nas pontas)
 void Desenha::gluCapsule(GLUquadric* quad, GLdouble base, GLdouble top, GLdouble height, GLint slices, GLint stacks) {
 	gluQuadricNormals(quad, GLU_SMOOTH);			// Create Smooth Normals
-	gluQuadricTexture(quad, GL_TRUE);		  		// Create Texture Coords
+    gluQuadricTexture(quad, GL_TRUE);		  		// Create Texture Coords
   glPushMatrix();
     gluCylinder(quad, base, top, height, slices, stacks);
     gluSphere(quad, base, slices, stacks);

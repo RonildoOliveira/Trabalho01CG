@@ -3,10 +3,15 @@
 int glutGUI::width = 400;
 int glutGUI::height = 300;
 
+bool glutGUI::perspective =true;
+bool glutGUI::ortho = false;
+bool glutGUI::obliq = false;
+
 bool glutGUI::lbpressed = false;
 bool glutGUI::mbpressed = false;
 bool glutGUI::rbpressed = false;
 
+MouseLock glutGUI::mouse_lock = NOT_LOCKED;
 float glutGUI::last_x = 0.0;
 float glutGUI::last_y = 0.0;
 
@@ -24,12 +29,6 @@ int glutGUI::stacks = 200; //400;//16;
 
 int glutGUI::posCam = 0;
 
-float glutGUI::ax = 0.0;
-float glutGUI::ay = 0.0;
-float glutGUI::az = 0.0;
-
-bool glutGUI::trans_obj = false;
-
 bool glutGUI::iluminacao = true;
 bool glutGUI::enabled_light[8] = {true,true,true,true,true,true,true,false};
 bool glutGUI::hidden_light[8] = {false,false,false,false,false,false,false,false};
@@ -45,9 +44,15 @@ bool glutGUI::multiple_viewports = false;
 
 bool glutGUI::draw_eixos = true;
 
+bool glutGUI::trans_obj = false;
+
 float glutGUI::tx = 0.0;
 float glutGUI::ty = 0.0;
 float glutGUI::tz = 0.0;
+
+float glutGUI::ax = 0.0;
+float glutGUI::ay = 0.0;
+float glutGUI::az = 0.0;
 
 float glutGUI::sx = 1.0;
 float glutGUI::sy = 1.0;
@@ -57,7 +62,19 @@ float glutGUI::lx = 0.0;
 float glutGUI::ly = 0.0;
 float glutGUI::lz = 0.0;
 
-float glutGUI::delta = 5.0;
+float glutGUI::dtx = 0.0;
+float glutGUI::dty = 0.0;
+float glutGUI::dtz = 0.0;
+
+float glutGUI::dax = 0.0;
+float glutGUI::day = 0.0;
+float glutGUI::daz = 0.0;
+
+float glutGUI::dsx = 0.0;
+float glutGUI::dsy = 0.0;
+float glutGUI::dsz = 0.0;
+
+//float glutGUI::delta = 5.0;
 
 
 void glutGUI::resize(int w, int h)
@@ -181,9 +198,13 @@ void glutGUI::defaultKey(unsigned char key, int x, int y)
         glutReshapeWindow(800,600);
         break;
 
-    case 'l':
-        enabled_light[7] = !enabled_light[7];
+    case 'o':
+        glutGUI::perspective = !glutGUI::perspective;
         break;
+
+    //case 'l':
+    //    enabled_light[7] = !enabled_light[7];
+    //    break;
     case '0'...'7':
         enabled_light[key-'0'] = !enabled_light[key-'0'];
         break;
@@ -192,6 +213,11 @@ void glutGUI::defaultKey(unsigned char key, int x, int y)
         posCam = 1;
         delete cam;
         cam = new CameraDistante(); //CameraDistante(0,1,5, 0,1,0, 0,1,0);
+        break;
+    case 'j':
+        posCam = 1;
+        delete cam;
+        cam = new CameraJogo(); //CameraDistante(0,1,5, 0,1,0, 0,1,0);
         break;
     case 'C':
         posCam = (posCam+1)%6;
@@ -228,6 +254,25 @@ void glutGUI::defaultKey(unsigned char key, int x, int y)
         savedCamera[6] = cam->u.x;
         savedCamera[7] = cam->u.y;
         savedCamera[8] = cam->u.z;
+        break;
+
+    case 'm':
+        mouse_lock = MouseLock( ( int(mouse_lock) + 1 )%3 );
+        break;
+
+    case 'i':
+        glutGUI::tx = 0.0;
+        glutGUI::ty = 0.0;
+        glutGUI::tz = 0.0;
+        glutGUI::ax = 0.0;
+        glutGUI::ay = 0.0;
+        glutGUI::az = 0.0;
+        glutGUI::sx = 1.0;
+        glutGUI::sy = 1.0;
+        glutGUI::sz = 1.0;
+        glutGUI::lx = 0.0;
+        glutGUI::ly = 0.0;
+        glutGUI::lz = 0.0;
         break;
 
     case 'X':
@@ -289,11 +334,19 @@ void glutGUI::autoCamMotion(float value, Axis axis, int nIterations)
 
 void glutGUI::idle()
 {
+    dtx = 0.0; dty = 0.0; dtz = 0.0;
+    dax = 0.0; day = 0.0; daz = 0.0;
+    dsx = 0.0; dsy = 0.0; dsz = 0.0;
+
     autoCamMotion(value,axis,nIterations);
     glutPostRedisplay();
 }
 
 void glutGUI::mouseButton(int button, int state, int x, int y) {
+    dtx = 0.0; dty = 0.0; dtz = 0.0;
+    dax = 0.0; day = 0.0; daz = 0.0;
+    dsx = 0.0; dsy = 0.0; dsz = 0.0;
+
     // if the left button is pressed
     if (button == GLUT_LEFT_BUTTON) {
         // when the button is pressed
@@ -335,6 +388,13 @@ void glutGUI::mouseButton(int button, int state, int x, int y) {
 }
 
 void glutGUI::mouseMove(int x, int y) {
+    if ( mouse_lock == ONLY_X ) last_y = y;
+    if ( mouse_lock == ONLY_Y ) last_x = x;
+
+    dtx = 0.0; dty = 0.0; dtz = 0.0;
+    dax = 0.0; day = 0.0; daz = 0.0;
+    dsx = 0.0; dsy = 0.0; dsz = 0.0;
+
     float fator = 10.0;
     if (lbpressed && !rbpressed && !mbpressed) {
         if (!trans_obj && (!trans_luz || !obj_transp)) {
@@ -342,8 +402,10 @@ void glutGUI::mouseMove(int x, int y) {
             cam->rotatey(x,last_x);
         }
         if (trans_obj) {
-            ax += (y - last_y)/fator;
-            ay += (x - last_x)/fator;
+            dax = (y - last_y)/fator;
+            day = (x - last_x)/fator;
+            ax += dax;
+            ay += day;
         }
         if (trans_luz && obj_transp) {
             fator = 100.0;
@@ -359,8 +421,10 @@ void glutGUI::mouseMove(int x, int y) {
             cam->translatey(y,last_y);
         }
         if (trans_obj) {
-            tx += (x - last_x)/fator;
-            ty += -(y - last_y)/fator;
+            dtx = (x - last_x)/fator;
+            dty = -(y - last_y)/fator;
+            tx += dtx;
+            ty += dty;
         }
         if (trans_luz) {
             lx += (x - last_x)/fator;
@@ -373,9 +437,11 @@ void glutGUI::mouseMove(int x, int y) {
         }
         if (trans_obj) {
             fator = 100.0;
-            tz += (y - last_y)/fator;
+            dtz = (y - last_y)/fator;
+            tz += dtz;
             fator = 10.0;
-            az += -(x - last_x)/fator;
+            daz = -(x - last_x)/fator;
+            az += daz;
         }
         if (trans_luz) {
             fator = 100.0;
@@ -388,17 +454,80 @@ void glutGUI::mouseMove(int x, int y) {
     if (!lbpressed && !rbpressed && mbpressed) {
         if (!trans_obj) {
         } else {
-            sx += (x - last_x)/fator;
-            sy += -(y - last_y)/fator;
+            dsx = (x - last_x)/fator;
+            dsy = -(y - last_y)/fator;
+            sx += dsx;
+            sy += dsy;
         }
     }
     if (lbpressed && !rbpressed && mbpressed) {
         if (!trans_obj) {
         } else {
-            sz += (y - last_y)/fator;
+            dsz = (y - last_y)/fator;
+            sz += dsz;
         }
     }
 
     last_x = x;
     last_y = y;
+}
+
+//------------------------------------------------
+
+void glutGUI::multGLMatrixByVector(float res[4], float matriz[16], float entr[4]) {
+    for (int i = 0; i < 4; i++) {
+        res[i] = 0.0;
+        for (int j = 0; j < 4; j++) {
+            //res[i] += matriz[4*i+j] * entr[j];
+            res[i] += matriz[4*j+i] * entr[j]; //matriz^T.entr
+        }
+    }
+}
+
+void glutGUI::showGLMatrixIn2D(float matriz[16]) {
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            //cout << matriz[4*i+j] << "  ";
+            //cout << matriz[4*j+i] << "  "; //matriz^T
+            cout << setiosflags (ios::fixed) << setprecision(2) << matriz[4*j+i] << "  "; //matriz^T
+        }
+        cout << "\n";
+    }
+    //cout << "\n";
+}
+
+void glutGUI::composite()
+{
+    //3D
+    //glTranslated(tx,ty,tz);
+    //glRotated(az,0,0,1);
+    //glRotated(ay,0,1,0);
+    //glRotated(ax,1,0,0);
+    //glScaled(sx,sy,sz);
+    //2D
+    glTranslated(tx,ty,0.0);
+    glRotated(az,0,0,1);
+    glScaled(sx,sy,1.0);
+}
+
+void glutGUI::showLocalAndGlobalCoords(float pl[4])
+{
+    //imprimindo coords locais e coords globais
+      //locais
+        cout << "Coords locais: " << pl[0] << ", " << pl[1] << ", " << pl[2] << "\n";
+      //globais
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+            glLoadIdentity();
+                //composicao de transformacoes
+                composite();
+            //obtendo e mostrando a matriz de composicao (matriz modelView atual) no console
+            float compositeMatrix[16];
+            glGetFloatv(GL_MODELVIEW_MATRIX,compositeMatrix);
+            showGLMatrixIn2D(compositeMatrix);
+            //ponto em coords globais é obtido pelo ponto em coords locais transformado pela matriz de composicao
+            float pg[4];
+            multGLMatrixByVector(pg,compositeMatrix,pl);
+            cout << "Coords globais: " << pg[0] << ", " << pg[1] << ", " << pg[2] << "\n\n";
+        glPopMatrix();
 }

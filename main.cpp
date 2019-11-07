@@ -115,7 +115,7 @@ void carregaArquivo(){
 
             file >> nomeModelo;
 
-            if(nomeModelo == "bule"){
+            if(nomeModelo == "bule") {
                 file >> tx >> ty >> tz;
                 file >> ax >> ay >> az;
                 file >> sx >> sy >> sz;
@@ -134,9 +134,7 @@ void carregaArquivo(){
                 bule->setTranslado_x(tz);
 
                 listaModelos.push_back(bule);
-            }
-
-            else if(nomeModelo == "batmovel") {
+            } else if(nomeModelo == "batmovel") {
                 file >> tx >> ty >> tz;
                 file >> ax >> ay >> az;
                 file >> sx >> sy >> sz;
@@ -156,8 +154,7 @@ void carregaArquivo(){
                 batmovel->setTranslado_z(tz);
 
                 listaModelos.push_back(batmovel);
-            }
-            else if(nomeModelo == "cubo") {
+            } else if(nomeModelo == "cubo") {
                 file >> tx >> ty >> tz;
                 file >> ax >> ay >> az;
                 file >> sx >> sy >> sz;
@@ -177,8 +174,7 @@ void carregaArquivo(){
                 cubo->setTranslado_z(tz);
 
                 listaModelos.push_back(cubo);
-            }
-            else if(nomeModelo == "casa") {
+            } else if(nomeModelo == "casa") {
                 file >> tx >> ty >> tz;
                 file >> ax >> ay >> az;
                 file >> sx >> sy >> sz;
